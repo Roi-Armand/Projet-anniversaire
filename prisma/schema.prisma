@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int         @id @default(autoincrement())
+  email             String      @unique
+  password          String
+  firstName         String
+  lastName          String
+  role              Role        @default(USER)
+  isEmailVerified   Boolean     @default(false)
+  verificationToken String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  organizer         Organizer?
+  participant       Participant?
+}
+
+model Event {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  startTime   String
+  endTime     String
+  location    String
+  address     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  participants Participant[]
+  organizers   Organizer[]
+}
+
+model Participant {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       String?
+  status      Status   @default(PENDING)
+  notes       String?
+  guests      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  events      Event[]
+}
+
+model Organizer {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       String?
+  position    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  events      Event[]
+}
+
+enum Role {
+  USER
+  ORGANIZER
+  ADMIN
+}
+
+enum Status {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
